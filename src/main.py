@@ -8,6 +8,10 @@ from datetime import datetime
 from hashlib import md5
 from pathlib import Path
 
+from selenium.common.exceptions import TimeoutException, InvalidArgumentException
+
+from parsers import PublicAccountScraper, PrivateAccountException
+
 _logger = logging.getLogger(__name__)
 
 MY_MONTH_FORMAT = '%Y%m'
@@ -79,24 +83,50 @@ def parse_urls(date_target, credentials):
         # just create or truncate
         pass
 
-    with open(URL_LIST_FILE_NAME, "r", encoding="utf-8") as urls:
-        for url in urls:
-            url = url.strip("\n")
-            if not url:
-                continue
-            task = Task(url, credentials, date_target)
-            task.run()
+    public_scraper = PublicAccountScraper()
+    try:
+        with open(URL_LIST_FILE_NAME, "r", encoding="utf-8") as urls:
+            for url in urls:
+                url = url.strip("\n")
+                if not url:
+                    continue
+
+                try:
+                    # check if account is a public page
+                    public_scraper.go_to(url)
+                    scraper = public_scraper
+                except PrivateAccountException:
+                    _logger.error(
+                        "%s requires private account parser. Not implemented yet. Ignoring...",
+                        url)
+                    # scraper = private_scraper
+                    continue
+                except TimeoutException:
+                    _logger.error("Request to %s, timed out. Ignoring...", task.scraper.url)
+                    continue
+                except InvalidArgumentException:
+                    _logger.error("Can not parse invalid url: (%s)", url)
+                    continue
+
+                task = Task(url, credentials, date_target, scraper)
+                try:
+                    task.run()
+                except Exception as ex:
+                    _logger.error("Unexpected error: (%s) %s", type(ex), ex)
+    finally:
+        public_scraper.close()
 
 
 class Task:
     """ The task executed for each account """
     URL_HASH_CSV_PATH = Path("url-md5.csv")
 
-    def __init__(self, url, credentials, date_target):
+    def __init__(self, url, credentials, date_target, scraper):
         self.account_url = url
         self.url_hash = md5(url.encode("utf-8")).hexdigest()
         self.credentials = credentials
         self.date_target = date_target
+        self.scraper = scraper
 
     def save_url_hash(self):
         with open(self.URL_HASH_CSV_PATH, "a+", encoding="utf-8") as dom_out:
