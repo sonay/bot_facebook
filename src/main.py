@@ -1,9 +1,12 @@
+import csv
 import logging
 import os
 import sys
 import argparse
 from collections import namedtuple
 from datetime import datetime
+from hashlib import md5
+from pathlib import Path
 
 _logger = logging.getLogger(__name__)
 
@@ -72,11 +75,36 @@ URL_LIST_FILE_NAME = "urls.lst"
 
 
 def parse_urls(date_target, credentials):
+    with open(Task.URL_HASH_CSV_PATH, "w", encoding="utf-8"):
+        # just create or truncate
+        pass
+
     with open(URL_LIST_FILE_NAME, "r", encoding="utf-8") as urls:
         for url in urls:
             url = url.strip("\n")
             if not url:
                 continue
+            task = Task(url, credentials, date_target)
+            task.run()
+
+
+class Task:
+    """ The task executed for each account """
+    URL_HASH_CSV_PATH = Path("url-md5.csv")
+
+    def __init__(self, url, credentials, date_target):
+        self.account_url = url
+        self.url_hash = md5(url.encode("utf-8")).hexdigest()
+        self.credentials = credentials
+        self.date_target = date_target
+
+    def save_url_hash(self):
+        with open(self.URL_HASH_CSV_PATH, "a+", encoding="utf-8") as dom_out:
+            writer = csv.writer(dom_out)
+            writer.writerow([self.account_url, self.url_hash])
+
+    def run(self):
+        self.save_url_hash()
 
 
 if __name__ == "__main__":
