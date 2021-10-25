@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import argparse
 from collections import namedtuple
@@ -11,6 +12,7 @@ FACEBOOK_START_YEAR = 2004
 FACEBOOK_START_MONTH = 2
 
 DateTarget = namedtuple('DateTarget', ['as_string', 'as_date_time'])
+Credentials = namedtuple('Credentials', ['email', 'password'])
 
 
 def check_mount(my_month):
@@ -50,6 +52,14 @@ def main():
     except ValueError as val_err:
         _logger.critical("Illegal month value: %s", val_err)
         return
+
+    email = os.getenv("EMAIL")
+    password = os.getenv("PASSWORD")
+    can_login = email and password
+    if not can_login:
+        _logger.warning("E-mail or password for scraper account is not set in ENV. "
+                        "Accounts requiring login to access their data will not be scraped. "
+                        "Consider setting EMAIL and PASSWORD env variables.")
 
 
 if __name__ == "__main__":
