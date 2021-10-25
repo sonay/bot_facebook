@@ -55,6 +55,9 @@ class PublicAccountScraper:
                                "/span[text()='Gönderiler']" \
                                "/parent::a"
 
+    # Annoying sticky banner to encourage membership
+    PAGELET_XPATH = "//div[@id='pagelet_growth_expanding_cta']"
+
     def __init__(self, browser=None):
         self.browser = browser if browser else browser_with_fresh_profile()
         self.url = ""
@@ -88,3 +91,29 @@ class PublicAccountScraper:
 
     def close(self):
         self.browser.close()
+
+    def full_page_screenshot(self, file_path):
+        """
+            Takes a full page screenshot and saves in file_path
+            :param file_path: path to save file, relative to current working directory
+        """
+        self._delete_view_blocking_elements()
+        self.browser.get_full_page_screenshot_as_file(str(file_path))
+
+    def _delete_view_blocking_elements(self):
+        self._delete_pagelet_banner()
+
+    def _delete_pagelet_banner(self):
+        try:
+            banner = self.browser.find_element(By.XPATH, self.PAGELET_XPATH)
+            self._remove_element(banner)
+        except NoSuchElementException:
+            pass
+
+    def _remove_element(self, element):
+        self.browser.execute_script(
+            """
+                var elem = arguments[0]
+                elem.parentNode.removeChild(elem)
+            """, element)
+

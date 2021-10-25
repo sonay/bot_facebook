@@ -14,6 +14,8 @@ from parsers import PublicAccountScraper, PrivateAccountException
 
 _logger = logging.getLogger(__name__)
 
+APP_NAME = "bot_facebook"
+
 MY_MONTH_FORMAT = '%Y%m'
 FACEBOOK_START_YEAR = 2004
 FACEBOOK_START_MONTH = 2
@@ -128,6 +130,12 @@ class Task:
         self.date_target = date_target
         self.scraper = scraper
 
+    def account_screenshot_filename(self):
+        """
+        :return: file name to save the account page screenshot
+        """
+        return f"{APP_NAME}_{self.url_hash}.png"
+
     def save_url_hash(self):
         with open(self.URL_HASH_CSV_PATH, "a+", encoding="utf-8") as dom_out:
             writer = csv.writer(dom_out)
@@ -135,6 +143,7 @@ class Task:
 
     def run(self):
         self.save_url_hash()
+        self.scraper.full_page_screenshot(self.account_screenshot_filename())
 
 
 if __name__ == "__main__":
