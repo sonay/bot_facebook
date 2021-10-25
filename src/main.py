@@ -61,8 +61,26 @@ def main():
                         "Accounts requiring login to access their data will not be scraped. "
                         "Consider setting EMAIL and PASSWORD env variables.")
 
+    try:
+        parse_urls(DateTarget(my_month, year_month), Credentials(email, password))
+    except FileNotFoundError:
+        _logger.critical("%s is missing, can not proceed.", URL_LIST_FILE_NAME)
+        return
+
+
+URL_LIST_FILE_NAME = "urls.lst"
+
+
+def parse_urls(date_target, credentials):
+    with open(URL_LIST_FILE_NAME, "r", encoding="utf-8") as urls:
+        for url in urls:
+            url = url.strip("\n")
+            if not url:
+                continue
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s [%(levelname)s]: %(message)s',
                         stream=sys.stdout)
+    main()
