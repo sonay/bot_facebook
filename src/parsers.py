@@ -110,7 +110,7 @@ class PublicAccountScraper:
     # Use on a post element
     # Text of the selected element is the number of comments.
     # For example:
-    #   4 Paylaşım
+    #   4 Yorum
     COMMENTS_XPATH = ".//form[@class='commentable_item']" \
                      "//span" \
                      f"/a[{xpath_endswith('text()', 'Yorum')}]"
@@ -118,8 +118,7 @@ class PublicAccountScraper:
     # Use on a post element
     # Text of the selected element is the number of shares.
     # For example:
-    #   1 share
-    #   2 shares
+    #   1 Paylaşım
     SHARES_XPATH = ".//form[@class='commentable_item']" \
                    f"//span[{xpath_endswith('text()', 'Paylaşım')}]"
 
