@@ -123,6 +123,8 @@ def parse_urls(date_target, credentials):
 class Task:
     """ The task executed for each account """
     URL_HASH_CSV_PATH = Path("url-md5.csv")
+    OCR_DIR = Path('OCR')
+    DOM_DIR = Path('DOM')
 
     def __init__(self, url, credentials, date_target, scraper):
         self.account_url = url
@@ -147,6 +149,43 @@ class Task:
         self.scraper.full_page_screenshot(self.account_screenshot_filename())
         self.scraper.go_to_posts()
         self.scraper.scroll_down(self.date_target.as_date_time)
+        self.OCR_DIR.mkdir(exist_ok=True)
+        self.DOM_DIR.mkdir(exist_ok=True)
+
+
+class PostConsumer:
+    """
+    A consumer that acts on the parsed posts to save them in .csv and and save post screenshots
+    """
+
+    def __init__(self, scraper, task):
+        self.scraper = scraper
+        self.task = task
+
+    def accept(self, parsed_post, post_element):
+        pass
+
+    def __call__(self, parsed_post, post_element):
+        self.accept(parsed_post, post_element)
+
+
+class DateFilter:
+    """
+        A predicate intended to be used for matching a Post's year and month
+    """
+
+    def __init__(self, year_month):
+        """
+            :param year_month:  a date-like object that has year and month attributes
+        """
+        self.year = year_month.year
+        self.month = year_month.month
+
+    def apply(self, post):
+        return (self.year, self.month) == (post.time.year, post.time.month)
+
+    def __call__(self, post):
+        return self.apply(post)
 
 
 if __name__ == "__main__":

@@ -241,3 +241,16 @@ class PublicAccountScraper:
         except NoSuchElementException:
             return 0
         return int(element.text.split(maxsplit=1)[0])
+
+    def filter_by(self, predicate, consumer):
+        """
+        :param predicate: A predicate function that takes a Post as input.
+
+        :param consumer: A callback function to be called with parsed post and post element
+                         matching the predicate.
+        """
+        post_elements = self.browser.find_elements(By.XPATH, self.POST_XPATH)
+        for post_element in post_elements:
+            post = self._parse_post(post_element)
+            if predicate(post):
+                consumer(post, post_element)
