@@ -349,13 +349,13 @@ class PrivateAccountScraper:
     def go_to_posts(self):
         """NO-OP. We should already be at posts at all times."""
 
-    def scroll_down(self):
+    def scroll_down(self, date_target):
         """Click on filter, choose date_target."""
 
-    def wallpaper_visibility(self):
+    def wallpaper_visibility(self, visible):
         """NO-OP wallpaper doesn't overlay posts when logged-in"""
 
-    def filter_by(self):
+    def filter_by(self, predicate, consumer):
         """Parse posts, apply by predicate, supply to consumer."""
 
     def close(self):
