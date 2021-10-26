@@ -166,7 +166,9 @@ class PostConsumer:
         self.task = task
 
     def accept(self, parsed_post, post_element):
-        pass
+        with open(self.task.dom_csv_path(), "a+", encoding="utf-8") as dom_out:
+            writer = csv.writer(dom_out)
+            writer.writerow([parsed_post.likes, parsed_post.comments, parsed_post.shares])
 
     def __call__(self, parsed_post, post_element):
         self.accept(parsed_post, post_element)
