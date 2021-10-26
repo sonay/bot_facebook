@@ -12,7 +12,7 @@ or may not raise in case of a URL error.
 
 bot_facebook requires
 * **tr_TR.UTF8** LC_ALL locale to be available in your system.
-* Firefox and geckodriver (version 0.30.0) to be on your PATH.
+* Firefox and geckodriver (version 0.30.0) to be installed and on your PATH.
 * To parse accounts requiring log in, EMAIL and PASSWORD env variables to be set
  (Though this is not possible at the moment)
 * tesseract-ocr (version 4.1.1) and tesseract-ocr-tur (Turkish language data) to be installed on 
@@ -28,7 +28,7 @@ format bot_facebook_[URL_MD5_Hash].png, for example bot_facebook_059ac34dcc4305b
 
 3. Parsing each matching -year and month of post time- post data in the Posts/Gönderiler page
 of the account and saving it in a .csv file, in **DOM/** directory of the current working
-directory, named in the format bot_facebook_[URL_MD5_HASH],
+directory, named in the format bot_facebook_[URL_MD5_HASH].csv,
 for example bot_facebook_059ac34dcc4305b54af17c27d5d50902.csv where each line has 
 likes, comments and shares column values. For example: "13, 4, 5" for likes, comments and shares
 respectively.
@@ -41,6 +41,13 @@ for example bot_facebook_202110_059ac34dcc4305b54af17c27d5d50902_0027.png
 5. Creating a full screenshot of the matching posts in page order by assembling single post 
 screenshots and saving in the name format bot_facebook_[YEARMONTH]_[URL_MD5_HASH].png, 
 for example bot_facebook_202110_059ac34dcc4305b54af17c27d5d50902.png
+
+Besides main.py, you can use ocr.py to analyze visually gathered statistics and have them saved in a
+.csv file in **OCR/** directory, just like the .csv format explained in point 3.
+
+Finally, to gather summarized data (total likes, shares & comments) grouped by URL, you can use 
+summary.py with a **--dir** parameter specifying the statistics source directory. The output will be
+saved in **bot-facebook_sum.csv** file in the specified source directory.
 
 
 ## How to build
