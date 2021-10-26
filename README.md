@@ -60,6 +60,9 @@ pip3 install -r requirements.txt
 
 ## How to run
 ```
+# Install Firefox and geckodriver, place them in PATH if needed.
+# set env variables EMAIL and PASSWORD to your account's credentials, if you need private account parsing.
+# set MOZ_HEADLESS=1 in env, if you want the program running in headless mode.
 # To start scraping
 python3 main.py --month [yearmonth]
 
