@@ -14,7 +14,7 @@ from PIL import Image
 from selenium.common.exceptions import TimeoutException, InvalidArgumentException
 
 from exceptions import PrivateAccountException, TemporarilyBannedException
-from parsers import PublicAccountScraper
+from parsers import PublicAccountScraper, PrivateAccountScraper
 
 # For Python to parse Turkish datetime properly (to handle localized month and day names)
 locale.setlocale(locale.LC_ALL, "tr_TR.UTF8")
@@ -93,6 +93,7 @@ def parse_urls(date_target, credentials):
         pass
 
     public_scraper = PublicAccountScraper()
+    private_scraper = PrivateAccountScraper(credentials)
     try:
         with open(URL_LIST_FILE_NAME, "r", encoding="utf-8") as urls:
             for url in urls:
@@ -105,11 +106,11 @@ def parse_urls(date_target, credentials):
                     public_scraper.go_to(url)
                     scraper = public_scraper
                 except PrivateAccountException:
-                    _logger.error(
-                        "%s requires private account parser. Not implemented yet. Ignoring...",
-                        url)
-                    # scraper = private_scraper
-                    continue
+                    # _logger.error(
+                    #     "%s requires private account parser. Not implemented yet. Ignoring...",
+                    #     url)
+                    scraper = private_scraper
+                    scraper.go_to(url)
                 except TimeoutException:
                     _logger.error("Request to %s, timed out. Ignoring...", task.scraper.url)
                     continue
@@ -127,7 +128,7 @@ def parse_urls(date_target, credentials):
                     _logger.error("Unexpected error: (%s) %s", type(ex), ex)
     finally:
         public_scraper.close()
-
+        private_scraper.close()
 
 class Task:
     """ The task executed for each account """

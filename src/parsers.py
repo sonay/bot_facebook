@@ -319,3 +319,44 @@ class PublicAccountScraper:
             self._remove_element(element)
         except NoSuchElementException:
             pass
+
+
+class PrivateAccountScraper:
+    FACEBOOK_HOME_URL = "https://www.facebook.com"
+
+    def __init__(self, credentials, browser=None):
+        self.credentials = credentials
+        self.logged_in = False
+        self.browser = browser if browser else browser_with_fresh_profile()
+
+    def login(self):
+        if self.logged_in:
+            return
+        self.browser.get(self.FACEBOOK_HOME_URL)
+        self.browser.find_element(By.NAME, 'email').send_keys(self.credentials.email)
+        self.browser.find_element(By.NAME, 'pass').send_keys(self.credentials.password)
+        self.browser.find_element(By.NAME, 'login').click()
+        self.logged_in = True
+
+    def full_page_screenshot(self, file_path):
+        time.sleep(3)
+        self.browser.get_full_page_screenshot_as_file(str(file_path))
+
+    def go_to(self, url):
+        self.login()
+        self.browser.get(url)
+
+    def go_to_posts(self):
+        """NO-OP. We should already be at posts at all times."""
+
+    def scroll_down(self):
+        """Click on filter, choose date_target."""
+
+    def wallpaper_visibility(self):
+        """NO-OP wallpaper doesn't overlay posts when logged-in"""
+
+    def filter_by(self):
+        """Parse posts, apply by predicate, supply to consumer."""
+
+    def close(self):
+        self.browser.close()
