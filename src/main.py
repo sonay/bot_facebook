@@ -1,4 +1,5 @@
 import csv
+import locale
 import logging
 import os
 import sys
@@ -14,6 +15,9 @@ from selenium.common.exceptions import TimeoutException, InvalidArgumentExceptio
 
 from exceptions import PrivateAccountException, TemporarilyBannedException
 from parsers import PublicAccountScraper
+
+# For Python to parse Turkish datetime properly (to handle localized month and day names)
+locale.setlocale(locale.LC_ALL, "tr_TR.UTF8")
 
 _logger = logging.getLogger(__name__)
 
@@ -151,6 +155,12 @@ class Task:
         :return: file name to save the screenshot containing all posts for date_target
         """
         return f"{APP_NAME}_{self.date_target.as_string}_{self.url_hash}.png"
+
+    def dom_csv_path(self):
+        """
+        :return: csv filename to be placed under ./DOM
+        """
+        return self.DOM_DIR / f"{APP_NAME}_{self.url_hash}.csv"
 
     def save_url_hash(self):
         with open(self.URL_HASH_CSV_PATH, "a+", encoding="utf-8") as dom_out:
