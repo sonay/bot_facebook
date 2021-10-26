@@ -10,7 +10,7 @@ from pathlib import Path
 
 from selenium.common.exceptions import TimeoutException, InvalidArgumentException
 
-from exceptions import PrivateAccountException
+from exceptions import PrivateAccountException, TemporarilyBannedException
 from parsers import PublicAccountScraper
 
 _logger = logging.getLogger(__name__)
@@ -114,6 +114,9 @@ def parse_urls(date_target, credentials):
                 task = Task(url, credentials, date_target, scraper)
                 try:
                     task.run()
+                except TemporarilyBannedException:
+                    _logger.critical("Facebook might have banned us :(")
+                    return
                 except Exception as ex:
                     _logger.error("Unexpected error: (%s) %s", type(ex), ex)
     finally:
