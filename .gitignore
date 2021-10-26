@@ -1,4 +1,5 @@
 *.csv
 *.png
-DOM/*
-OCR/*
+src/DOM/
+src/OCR/
+src/__pycache__
