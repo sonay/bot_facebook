@@ -10,7 +10,8 @@ from pathlib import Path
 
 from selenium.common.exceptions import TimeoutException, InvalidArgumentException
 
-from parsers import PublicAccountScraper, PrivateAccountException
+from exceptions import PrivateAccountException
+from parsers import PublicAccountScraper
 
 _logger = logging.getLogger(__name__)
 
@@ -144,6 +145,8 @@ class Task:
     def run(self):
         self.save_url_hash()
         self.scraper.full_page_screenshot(self.account_screenshot_filename())
+        self.scraper.go_to_posts()
+        self.scraper.scroll_down(self.date_target.as_date_time)
 
 
 if __name__ == "__main__":
