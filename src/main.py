@@ -138,6 +138,7 @@ class Task:
         self.date_target = date_target
         self.scraper = scraper
         self.post_images = []
+        self.post_counter = 0
 
     def account_screenshot_filename(self):
         """
@@ -182,6 +183,14 @@ class Task:
                 height_cursor += img.height
             dst.save(self.all_posts_screenshot_filename())
 
+    def ocr_post_screenshot_path(self):
+        """
+        :return: a new file name for each post to be placed under ./OCR
+        """
+        self.post_counter += 1
+        count = str(self.post_counter).zfill(4)
+        return self.OCR_DIR / f"{APP_NAME}_{self.date_target.as_string}_{self.url_hash}_{count}.png"
+
 
 class PostConsumer:
     """
@@ -199,6 +208,9 @@ class PostConsumer:
 
         post_shot = self.scraper.element_screenshot_as_png(post_element)
         self.task.post_images.append(post_shot)
+
+        self.scraper.post_reactions_screenshot(post_element,
+                                               self.task.ocr_post_screenshot_path())
 
     def __call__(self, parsed_post, post_element):
         self.accept(parsed_post, post_element)

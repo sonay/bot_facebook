@@ -127,6 +127,10 @@ class PublicAccountScraper:
     # It overlaps the post time on small screens.
     FLOATING_REACTION_BOX_XPATH = "//div[contains(@class, 'fixed_elem')]"
 
+    # Use on a reaction box
+    # To remove comments to help tesseract
+    COMMENTS_HEADER_XPATH = ".//h6[@class='accessible_elem' and text()='Yorumlar']/parent::div"
+
     def __init__(self, browser=None):
         self.browser = browser if browser else browser_with_fresh_profile()
         self.url = ""
@@ -284,5 +288,35 @@ class PublicAccountScraper:
                     var wallpaper = arguments[0]
                     wallpaper.style.visibility = '{visibility}'
                 """, box)
+        except NoSuchElementException:
+            pass
+
+    def post_reactions_screenshot(self, post_element, file_path):
+        """
+            Takes a screenshot of the given element after moving to it.
+            :param post_element: the dom element for the post
+            :param file_path: path to save file, relative to current working directory
+        """
+        self._delete_view_blocking_elements()
+        try:
+            reaction_box = post_element.find_element(By.XPATH, self.REACTION_BOX_XPATH)
+            self._safe_clean_reaction_box(reaction_box)
+        except NoSuchElementException:
+            reaction_box = post_element
+        self._move_to_element(reaction_box)
+        reaction_box.screenshot(str(file_path))
+
+    def _safe_clean_reaction_box(self, reaction_box):
+        self._safe_remove_element(reaction_box, self.COMMENTS_HEADER_XPATH)
+        self._safe_remove_element(reaction_box, self.LIKES_ICON_XPATH)
+        # Three times (Like, Comment, Share)
+        self._safe_remove_element(reaction_box, self.REACTION_BOX_BUTTONS_XPATH)
+        self._safe_remove_element(reaction_box, self.REACTION_BOX_BUTTONS_XPATH)
+        self._safe_remove_element(reaction_box, self.REACTION_BOX_BUTTONS_XPATH)
+
+    def _safe_remove_element(self, ancestor, xpath):
+        try:
+            element = ancestor.find_element(By.XPATH, xpath)
+            self._remove_element(element)
         except NoSuchElementException:
             pass
