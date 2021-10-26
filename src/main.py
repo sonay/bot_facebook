@@ -77,6 +77,9 @@ def main():
                         "Accounts requiring login to access their data will not be scraped. "
                         "Consider setting EMAIL and PASSWORD env variables.")
 
+    if os.getenv("MOZ_HEADLESS") == '1':
+        _logger.info("WebDriver configured to run in headless mode.")
+
     try:
         parse_urls(DateTarget(my_month, year_month), Credentials(email, password))
     except FileNotFoundError:
