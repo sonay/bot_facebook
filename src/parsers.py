@@ -123,6 +123,10 @@ class PublicAccountScraper:
     SHARES_XPATH = ".//form[@class='commentable_item']" \
                    f"//span[{xpath_endswith('text()', 'Paylaşım')}]"
 
+    # Remove this to create more space for post screenshots
+    # It overlaps the post time on small screens.
+    FLOATING_REACTION_BOX_XPATH = "//div[contains(@class, 'fixed_elem')]"
+
     def __init__(self, browser=None):
         self.browser = browser if browser else browser_with_fresh_profile()
         self.url = ""
@@ -270,3 +274,15 @@ class PublicAccountScraper:
         time.sleep(0.01)
         ActionChains(self.browser).move_to_element(element).perform()
         time.sleep(0.01)
+
+    def wallpaper_visibility(self, visible):
+        try:
+            box = self.browser.find_element(By.XPATH, self.FLOATING_REACTION_BOX_XPATH)
+            visibility = 'visible' if visible else 'hidden'
+            self.browser.execute_script(
+                f"""
+                    var wallpaper = arguments[0]
+                    wallpaper.style.visibility = '{visibility}'
+                """, box)
+        except NoSuchElementException:
+            pass
