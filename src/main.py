@@ -6,8 +6,10 @@ import argparse
 from collections import namedtuple
 from datetime import datetime
 from hashlib import md5
+from io import BytesIO
 from pathlib import Path
 
+from PIL import Image
 from selenium.common.exceptions import TimeoutException, InvalidArgumentException
 
 from exceptions import PrivateAccountException, TemporarilyBannedException
@@ -135,12 +137,19 @@ class Task:
         self.credentials = credentials
         self.date_target = date_target
         self.scraper = scraper
+        self.post_images = []
 
     def account_screenshot_filename(self):
         """
         :return: file name to save the account page screenshot
         """
         return f"{APP_NAME}_{self.url_hash}.png"
+
+    def all_posts_screenshot_filename(self):
+        """
+        :return: file name to save the screenshot containing all posts for date_target
+        """
+        return f"{APP_NAME}_{self.date_target.as_string}_{self.url_hash}.png"
 
     def save_url_hash(self):
         with open(self.URL_HASH_CSV_PATH, "a+", encoding="utf-8") as dom_out:
@@ -154,6 +163,24 @@ class Task:
         self.scraper.scroll_down(self.date_target.as_date_time)
         self.OCR_DIR.mkdir(exist_ok=True)
         self.DOM_DIR.mkdir(exist_ok=True)
+        # We don't want page wallpaper to block post content as we scroll down and screenshot
+        self.scraper.wallpaper_visibility(False)
+        self.scraper.filter_by(DateFilter(self.date_target.as_date_time),
+                               PostConsumer(self.scraper, self))
+        self.save_all_posts()
+
+    def save_all_posts(self):
+        """Assembles post screenshots into a single image and saves it"""
+        src = [Image.open(BytesIO(img), formats=("PNG",)) for img in self.post_images]
+        if src:
+            width = src[0].width
+            height = sum(img.height for img in src)
+            dst = Image.new('RGB', (width, height))
+            height_cursor = 0
+            for img in src:
+                dst.paste(img, (0, height_cursor))
+                height_cursor += img.height
+            dst.save(self.all_posts_screenshot_filename())
 
 
 class PostConsumer:
@@ -169,6 +196,9 @@ class PostConsumer:
         with open(self.task.dom_csv_path(), "a+", encoding="utf-8") as dom_out:
             writer = csv.writer(dom_out)
             writer.writerow([parsed_post.likes, parsed_post.comments, parsed_post.shares])
+
+        post_shot = self.scraper.element_screenshot_as_png(post_element)
+        self.task.post_images.append(post_shot)
 
     def __call__(self, parsed_post, post_element):
         self.accept(parsed_post, post_element)

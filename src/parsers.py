@@ -6,6 +6,7 @@ from datetime import datetime
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
@@ -254,3 +255,18 @@ class PublicAccountScraper:
             post = self._parse_post(post_element)
             if predicate(post):
                 consumer(post, post_element)
+
+    def element_screenshot_as_png(self, element):
+        self._delete_view_blocking_elements()
+        self._move_to_element(element)
+        return element.screenshot_as_png
+
+    def _move_to_element(self, element):
+        # WORK AROUND
+        # Firefox driver does not move to element if not in viewport
+        # because they believe there should be a scroll standard
+        # see: https://github.com/mozilla/geckodriver/issues/776
+        self.browser.execute_script("arguments[0].scrollIntoView();", element)
+        time.sleep(0.01)
+        ActionChains(self.browser).move_to_element(element).perform()
+        time.sleep(0.01)
